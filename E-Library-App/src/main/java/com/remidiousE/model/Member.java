@@ -17,7 +17,6 @@ public class Member {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-
     private String firstName;
     private String lastName;
     private String phoneNumber;
@@ -25,6 +24,5 @@ public class Member {
 
     @OneToOne(fetch = FetchType.LAZY)
     private Address address;
-
 
 }
