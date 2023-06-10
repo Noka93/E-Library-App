@@ -7,6 +7,13 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class MemberSearchBookByTitleRequest {
-    private String title;
+
+public class UserProfileUpdateRequest {
+    private String firstName;
+
+    private String lastName;
+
+    private String phoneNumber;
+
+    private String email;
 }

@@ -5,7 +5,6 @@ public class BookRegistrationException extends Exception{
     public BookRegistrationException() {
         super();
     }
-
     public BookRegistrationException(String message) {
         super(message);
     }

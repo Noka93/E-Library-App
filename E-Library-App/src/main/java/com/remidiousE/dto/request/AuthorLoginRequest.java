@@ -1,9 +1,12 @@
 package com.remidiousE.dto.request;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-public class MemberLoginRequest {
+@AllArgsConstructor
+public class AuthorLoginRequest {
     private String userName;
     private String password;
 }

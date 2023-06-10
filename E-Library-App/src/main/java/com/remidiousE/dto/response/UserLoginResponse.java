@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class MemberLoginResponse {
+public class UserLoginResponse {
+    private String username;
     private String message;
 }

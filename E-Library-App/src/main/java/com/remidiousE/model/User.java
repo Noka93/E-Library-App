@@ -9,20 +9,27 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "member")
+@Table(name = "user")
 
-public class Member {
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    private Long userId;
 
     private String firstName;
     private String lastName;
+    private String username;
     private String phoneNumber;
     private String email;
+    private String password;
+    private String houseNumber;
+    private String street;
+    private String localGovernmentArea;
+    private String state;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    private Address address;
+    @OneToOne
+    @JoinColumn(name = "admin_id")
+    private Admin admin;
 
 }

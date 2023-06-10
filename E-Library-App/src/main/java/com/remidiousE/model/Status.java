@@ -5,5 +5,5 @@ public enum Status {
     NOT_AVAILABLE,
     ON_HOLDSHELF,
     DAMAGED,
-    MISSING
+    RESERVED, MISSING
 }

@@ -1,15 +1,17 @@
 package com.remidiousE.dto.request;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-
+@Builder
 public class AdminRegistrationRequest {
-    private String fullName;
+    private String firstName;
+    private String lastName;
     private String username;
     private String password;
     private String email;
@@ -17,7 +19,7 @@ public class AdminRegistrationRequest {
     private String role;
     private String houseNumber;
     private String street;
-    private String town;
     private String lga;
     private String state;
 }
+

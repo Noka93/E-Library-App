@@ -1,16 +1,16 @@
 package com.remidiousE.dto.response;
 
-import com.remidiousE.model.Status;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 
-public class MemberSearchBookByTitleResponse {
+public class BookReservationResponse {
+    private Long id;
     private String title;
-    private Status status;
-    private String description;
+    private String message;
 }

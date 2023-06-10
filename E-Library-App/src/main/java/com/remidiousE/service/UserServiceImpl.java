@@ -1,18 +1,19 @@
 package com.remidiousE.service;
 
-import com.remidiousE.Exceptions.BookNotAvailableException;
-import com.remidiousE.Exceptions.BookNotFoundException;
-import com.remidiousE.Exceptions.BookRegistrationException;
-import com.remidiousE.Mapper.BookMapper;
-import com.remidiousE.dto.request.AdminRegistrationRequest;
-import com.remidiousE.dto.request.BookRegistrationRequest;
-import com.remidiousE.dto.response.AdminLoginResponse;
+import com.remidiousE.Exceptions.*;
+import com.remidiousE.Mapper.UserMapper;
+import com.remidiousE.dto.request.UserLoginRequest;
+import com.remidiousE.dto.request.UserRegistrationRequest;
 import com.remidiousE.dto.response.BookCheckoutResponse;
-import com.remidiousE.dto.response.BookRegistrationResponse;
 import com.remidiousE.dto.response.BookReservationResponse;
-import com.remidiousE.model.*;
-import com.remidiousE.repositories.AuthorRepository;
+import com.remidiousE.dto.response.UserLoginResponse;
+import com.remidiousE.dto.response.UserRegistrationResponse;
+import com.remidiousE.model.Author;
+import com.remidiousE.model.Book;
+import com.remidiousE.model.User;
+import com.remidiousE.model.Status;
 import com.remidiousE.repositories.BookRepository;
+import com.remidiousE.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,62 +22,60 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
-public class BookServiceImpl implements BookService {
+public class UserServiceImpl implements UserService {
+
+    private final UserRepository userRepository;
 
     private final BookRepository bookRepository;
-    private final AuthorRepository authorRepository;
+
     private List<Book> borrowedBooks = new ArrayList<>();
 
     @Override
-    public BookRegistrationResponse registerNewBook(BookRegistrationRequest bookRequest) throws BookRegistrationException {
-        try {
-            Book newBook = BookMapper.map(bookRequest);
-            if (newBook.getAuthor().getId() == null) {
-                Author savedAuthor = authorRepository.save(newBook.getAuthor());
-                newBook.setAuthor(savedAuthor);
-            }
-            Book savedBook = bookRepository.save(newBook);
-            return BookMapper.map(savedBook);
-        } catch (Exception e) {
-            throw new BookRegistrationException("Failed to register a new book.", e);
-        }
+    public UserRegistrationResponse registerNewUser(UserRegistrationRequest userRequest)throws UserRegistrationException {
+        User newUser = UserMapper.map(userRequest);
+        User savedUser = userRepository.save(newUser);
+
+        return UserMapper.map(savedUser);
     }
     @Override
-    public Optional<Book> findBookById(Long id) throws BookNotFoundException {
-        Optional<Book> foundBook = bookRepository.findById(id);
-        if (foundBook.isPresent()) {
-            return foundBook;
+    public Optional<User> findUserById(Long id) throws UserNotFoundException {
+        Optional<User> foundUser = userRepository.findById(id);
+        if (foundUser.isPresent()) {
+            return foundUser;
         } else {
-            throw new BookNotFoundException("Book not found with ID: " + id);
+            throw new UserNotFoundException("User not found with ID: " + id);
         }
+    }
+    @Override
+    public List<User> findAllUsers() {
+        return userRepository.findAll();
     }
 
     @Override
-    public List<Book> findAllBooks() {
-        return bookRepository.findAll();
-    }
-
-    @Override
-    public Book updateBookById(Long bookId, Book book) throws BookNotFoundException{
-        Optional<Book> existingBook = bookRepository.findById(bookId);
-        if (existingBook.isEmpty()) {
-            throw new BookNotFoundException("Book not found.");
+    public User updateUserProfileById(Long userId, User user) throws UserNotFoundException {
+        Optional<User> existingUser = userRepository.findById(userId);
+        if (existingUser.isEmpty()) {
+            throw new UserNotFoundException("User not found.");
         }
-        Book foundBook = existingBook.get();
+        User foundUser = existingUser.get();
 
-        if (book.getTitle() != null && !book.getTitle().isEmpty()) {
-            foundBook.setTitle(book.getTitle());
+        if (user.getFirstName() != null && !user.getFirstName().isEmpty()) {
+            foundUser.setFirstName(user.getFirstName());
         }
-        if (book.getDescription() != null && !book.getDescription().isEmpty()) {
-            foundBook.setDescription(book.getDescription());
+        if (user.getLastName() != null && !user.getLastName().isEmpty()) {
+            foundUser.setLastName(user.getLastName());
+        }
+        if (user.getEmail() != null && !user.getEmail().isEmpty()) {
+            foundUser.setEmail(user.getEmail());
+        }
+        if (user.getUsername() != null && !user.getUsername().isEmpty()) {
+            foundUser.setUsername(user.getUsername());
+        }
+        if (user.getPhoneNumber() != null && !user.getPhoneNumber().isEmpty()) {
+            foundUser.setPhoneNumber(user.getPhoneNumber());
         }
 
-        if (book.getIsbn() != null && !book.getIsbn().isEmpty()) {
-            foundBook.setIsbn(book.getIsbn());
-        }
-
-        return bookRepository.save(foundBook);
-
+        return userRepository.save(foundUser);
     }
     @Override
     public List<Book> searchBookByTitle(String title) throws BookNotFoundException {
@@ -87,19 +86,44 @@ public class BookServiceImpl implements BookService {
             throw new BookNotFoundException("No books found with the given title");
         }
     }
-
     @Override
-    public void deleteBookById(Long bookId) {
-        bookRepository.deleteById(bookId);
+    public void deleteUserById(Long id) {
+        userRepository.deleteById(id);
     }
 
     @Override
-    public List<Book> findBooksByAuthorName(String firstname, String lastname) {
+    public Optional<User> findUserByUsername(String username) {
+        if (username == null) {
+            throw new IllegalArgumentException("Invalid username");
+        }else {
+            return userRepository.findUserByUsername(username);
+        }
+    }
+    @Override
+    public UserLoginResponse loginUser(UserLoginRequest request) {
+        UserLoginResponse userLoginResponse = new UserLoginResponse();
+        String username = request.getUserName();
+        String password = request.getPassword();
+        if (authenticate(username, password)) {
+            userLoginResponse.setMessage("You have logged in successfully");
+        } else {
+            userLoginResponse.setMessage("Failed to log in");
+        }
+        return userLoginResponse;
+    }
+    private boolean authenticate(String username, String password) {
+        if (username.equals("SexyFavour") && password.equals("2233")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    @Override
+    public List<Book> findBookByAuthor_FirstNameAndAuthor_LastName(String firstname, String lastname) {
         return bookRepository.findBookByAuthor_FirstNameAndAuthor_LastName(firstname, lastname);
     }
-
     @Override
-    public BookReservationResponse reserveBook(Long adminId, Long bookId) throws BookNotFoundException, BookNotAvailableException {
+    public BookReservationResponse reserveBook(Long userId, Long bookId) throws BookNotFoundException, BookNotAvailableException {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException("Book not found."));
 
@@ -108,7 +132,7 @@ public class BookServiceImpl implements BookService {
         }
 
         book.setStatus(Status.RESERVED);
-        book.setReservedBy(adminId);
+        book.setReservedBy(userId);
         book.setReservationTime(LocalDate.now());
         bookRepository.save(book);
 
@@ -154,15 +178,13 @@ public class BookServiceImpl implements BookService {
         BookCheckoutResponse response = new BookCheckoutResponse();
         response.setBookId(book.getId());
         response.setTitle(book.getTitle());
-        response.setCheckedOutBy(getLoggedInUser().toString());
+        response.setCheckedOutBy((String) getLoggedInUser());
 
         return response;
     }
-
     private Object getLoggedInUser() {
         return "User";
     }
-
     @Override
     public void returnBookAfterFiveDays(User user, Book book) {
         if (hasBorrowedBook(user, book)) {
@@ -185,27 +207,6 @@ public class BookServiceImpl implements BookService {
             System.out.println("You have not borrowed this book.");
         }
     }
-
-    @Override
-    public AdminLoginResponse loginAdmin(AdminRegistrationRequest request) {
-        AdminLoginResponse adminLoginResponse = new AdminLoginResponse();
-
-        String username = request.getUsername();
-        String password = request.getPassword();
-
-        if (authenticate(username, password)) {
-            adminLoginResponse.setMessage("You have logged in successfully");
-        } else {
-            adminLoginResponse.setMessage("Failed to log in");
-        }
-
-        return adminLoginResponse;
-    }
-
-    private boolean authenticate(String username, String password) {
-        return username.equals("admin") && password.equals("password");
-    }
-
     private boolean hasBorrowedBook(User user, Book book) {
         for (Book borrowedBook : borrowedBooks) {
             if (borrowedBook.equals(book) && borrowedBook.getBorrower().equals(user)) {
@@ -214,7 +215,6 @@ public class BookServiceImpl implements BookService {
         }
         return false;
     }
-
     private int getBorrowedDays(User user, Book book) {
         LocalDate borrowDate = book.getBorrowedDate();
         LocalDate currentDate = LocalDate.now();
@@ -226,10 +226,8 @@ public class BookServiceImpl implements BookService {
         }
         return borrowedDays;
     }
-
     private void removeBorrowedBook(User user, Book book) {
-        Iterator<Book> iterator = borrowedBooks.iterator();
-        while (iterator.hasNext()) {
+        for (Iterator<Book> iterator = borrowedBooks.iterator(); iterator.hasNext();) {
             Book borrowedBook = iterator.next();
             if (borrowedBook.equals(book) && borrowedBook.getBorrower().equals(user)) {
                 iterator.remove();
@@ -237,4 +235,5 @@ public class BookServiceImpl implements BookService {
             }
         }
     }
+
 }

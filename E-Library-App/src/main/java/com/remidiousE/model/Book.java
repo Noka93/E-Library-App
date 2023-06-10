@@ -3,10 +3,7 @@ package com.remidiousE.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.time.LocalDate;
 
 @Entity
 @Setter
@@ -21,13 +18,31 @@ public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    private Long adminId;
     private String title;
-    private String authorName;
+
+    @Enumerated()
     private Status status;
     private String description;
+    private String isbn;
+    private int year;
+    private Long reservedBy;
+    private LocalDate reservationTime;
+    private Boolean setAvailable;
+    private Boolean isAvailable;
+    private int borrowedDays;
+    private LocalDate borrowedDate;
+    private String borrower;
 
 
-    @ManyToMany(mappedBy = "books")
-    private List<Author> author;
+    @OneToOne(fetch = FetchType.LAZY)
+    private Author author;
 
+
+    public void setAvailable(boolean b) {
+    }
+
+    public boolean isAvailable() {
+        return true;
+    }
 }

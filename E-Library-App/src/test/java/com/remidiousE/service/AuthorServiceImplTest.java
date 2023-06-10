@@ -1,22 +1,39 @@
 package com.remidiousE.service;
 
-import com.remidiousE.Exceptions.AuthorRegistrationException;
+import com.remidiousE.Exceptions.*;
 import com.remidiousE.dto.request.AuthorRegistrationRequest;
 import com.remidiousE.dto.response.AuthorRegistrationResponse;
+import com.remidiousE.dto.response.BookCheckoutResponse;
+import com.remidiousE.model.Admin;
 import com.remidiousE.model.Author;
+import com.remidiousE.model.Book;
+import com.remidiousE.repositories.AuthorRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
+@Transactional
 class AuthorServiceImplTest {
+
+    @Autowired
+
+    private EntityManager entityManager;
+
     @Autowired
     private AuthorService authorService;
+
+    @Autowired
+    private AuthorRepository authorRepository;
 
     private AuthorRegistrationRequest authorRegistrationRequest;
 
@@ -32,20 +49,18 @@ class AuthorServiceImplTest {
         assertNotNull(foundAuthor);
     }
     @Test
-    void testToFindAuthorById() throws AuthorRegistrationException {
-        AuthorRegistrationResponse authorRegistrationResponse = authorService.registerNewAuthor(authorRegistrationRequest);
+    void testFindAuthorById() throws AuthorNotFoundException {
+        Author author = new Author();
+        authorRepository.save(author);
 
-        Long registeredAuthorId = 1L;
-        authorRegistrationResponse.setId(registeredAuthorId);
+        Long authorId = author.getId();
 
-        assertTrue(registeredAuthorId != null && registeredAuthorId > 0);
-
-        Optional<Author> foundAuthor = authorService.findAuthorById(registeredAuthorId);
+        Optional<Author> foundAuthor = authorService.findAuthorById(authorId);
 
         assertTrue(foundAuthor.isPresent());
-
-        assertEquals(registeredAuthorId, foundAuthor.get().getId());
+        assertEquals(authorId, foundAuthor.get().getId());
     }
+
     @Test
     void testToFindAllAuthor() throws AuthorRegistrationException {
         AuthorRegistrationRequest author1 = new AuthorRegistrationRequest();
@@ -55,24 +70,52 @@ class AuthorServiceImplTest {
 
         List<Author> authors = authorService.findAllAuthor();
 
-        assertEquals(4, authors.size());
+        assertEquals(2, authors.size());
     }
     private static AuthorRegistrationRequest buildAuthorRegistration(){
         AuthorRegistrationRequest authorRegistrationRequest = new AuthorRegistrationRequest();
         authorRegistrationRequest.setFirstName("Chibuzo");
         authorRegistrationRequest.setLastName("Alexander");
+        authorRegistrationRequest.setUsername("Chibu199");
         authorRegistrationRequest.setPassword("abcd");
         authorRegistrationRequest.setEmail("chibuzoAlex@gmail.com");
+        authorRegistrationRequest.setPhoneNumber("908345");
         authorRegistrationRequest.setHouseNumber("No. 44");
         authorRegistrationRequest.setStreet("Hebert Marcurly");
-        authorRegistrationRequest.setTown("Akoka");
         authorRegistrationRequest.setLga("Yaba");
         authorRegistrationRequest.setState("Lagos");
         return authorRegistrationRequest;
     }
 
     @Test
-    void testToDeleteAuthorById() throws AuthorRegistrationException {
+    void testUpdateAuthorProfileById() throws AuthorNotFoundException {
+        Author author = new Author();
+        author.setFirstName("Femi");
+        author.setLastName("Michael");
+        author.setEmail("femi@gmail.com");
+        author.setUsername("Femo02");
+        author.setPhoneNumber("08134757992");
+
+        Author savedAuthor = authorRepository.save(author);
+
+        Author updatedAuthor = new Author();
+        updatedAuthor.setFirstName("Femz");
+        updatedAuthor.setEmail("femi@example.com");
+
+        Author returnedAuthor = authorService.updateAuthorProfileById(savedAuthor.getId(), updatedAuthor);
+
+        assertNotNull(returnedAuthor);
+        assertEquals(savedAuthor.getId(), returnedAuthor.getId());
+        assertEquals(savedAuthor.getFirstName(), returnedAuthor.getFirstName());
+        assertEquals(savedAuthor.getLastName(), returnedAuthor.getLastName());
+        assertEquals(savedAuthor.getEmail(), returnedAuthor.getEmail());
+        assertEquals(savedAuthor.getUsername(), returnedAuthor.getUsername());
+        assertEquals(savedAuthor.getPhoneNumber(), returnedAuthor.getPhoneNumber());
+    }
+
+
+    @Test
+    void testToDeleteAuthorById() throws AuthorRegistrationException, AuthorNotFoundException {
         authorService.registerNewAuthor(authorRegistrationRequest);
 
         List<Author> authors = authorService.findAllAuthor();
@@ -83,7 +126,26 @@ class AuthorServiceImplTest {
 
         authors = authorService.findAllAuthor();
 
-        assertEquals(1, authors.size());
+        assertEquals(0, authors.size());
     }
+
+    @Test
+    void testAuthorCanCheckoutBook() throws BookNotFoundException, BookNotAvailableException {
+        Book book = new Book();
+        book.setTitle("Sample Book");
+        book.setAvailable(true);
+        entityManager.persist(book);
+        entityManager.flush();
+
+        Long bookId = book.getId();
+
+        BookCheckoutResponse response = authorService.checkoutBook(bookId);
+
+        assertNotNull(response);
+        assertEquals(bookId, response.getBookId());
+        assertEquals("Sample Book", response.getTitle());
+        assertNotNull(response.getCheckedOutBy());
+    }
+
 
 }

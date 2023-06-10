@@ -5,8 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-
-public class MemberRegistrationResponse {
-    private Long id;
+@AllArgsConstructor
+@NoArgsConstructor
+public class AuthorLoginResponse {
     private String message;
 }
