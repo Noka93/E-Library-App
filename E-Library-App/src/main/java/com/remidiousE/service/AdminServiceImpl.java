@@ -119,29 +119,21 @@ public class AdminServiceImpl implements AdminService{
     @Override
     public List<Book> searchBookByTitle(String title) throws BookNotFoundException {
         List<Book> books = bookRepository.searchBookByTitle(title);
-        if (!books.isEmpty()) {
-            return books;
-        } else {
+        if (!books.isEmpty())  return books;
             throw new BookNotFoundException("No books found with the given title");
-        }
-    }
 
+    }
     @Override
     public List<Book> findBooksByAuthorName(String firstname, String lastname) {
         return bookRepository.findBookByAuthor_FirstNameAndAuthor_LastName(firstname, lastname);
     }
-
     @Override
     public BookReservationResponse reserveBook(Long adminId, Long bookId) throws BookNotFoundException, BookNotAvailableException {
         Optional<Book> optionalBook = bookRepository.findById(bookId);
-        if (optionalBook.isEmpty()) {
-            throw new BookNotFoundException("Book not found.");
-        }
+        if (optionalBook.isEmpty()) throw new BookNotFoundException("Book not found.");
 
         Book book = optionalBook.get();
-        if (book.getStatus() != Status.AVAILABLE) {
-            throw new BookNotAvailableException("The book is not available for reservation.");
-        }
+        if (book.getStatus() != Status.AVAILABLE) throw new BookNotAvailableException("The book is not available for reservation.");
 
         book.setStatus(Status.RESERVED);
         book.setReservedBy(adminId);
@@ -154,13 +146,11 @@ public class AdminServiceImpl implements AdminService{
         response.setMessage("Book reserved successfully.");
         response.setId(book.getId());
         response.setTitle(book.getTitle());
-
         return response;
     }
 
     private void scheduleStatusChange(Long bookId) {
         ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-
         executorService.schedule(() -> {
             Optional<Book> optionalBook = bookRepository.findById(bookId);
             optionalBook.ifPresent(book -> {
@@ -172,32 +162,27 @@ public class AdminServiceImpl implements AdminService{
                 }
             });
         }, 2, TimeUnit.DAYS);
-
         executorService.shutdown();
     }
     @Override
     public void deleteAuthorById(Long authorId) {
         authorRepository.deleteById(authorId);
     }
-
     @Override
     public void deleteBookById(Long bookId) {
         bookRepository.deleteById(bookId);
     }
-
     @Override
     public void deleteUserById(Long userId) {
         userRepository.deleteById(userId);
     }
-
     @Override
     public BookCheckoutResponse checkoutBook(Long bookId) throws BookNotFoundException, BookNotAvailableException {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException("Book not found with ID: " + bookId));
 
-        if (!book.isAvailable()) {
+        if (!book.isAvailable())
             throw new BookNotAvailableException("Book is not available for checkout");
-        }
 
         book.setAvailable(false);
         bookRepository.save(book);
@@ -206,10 +191,8 @@ public class AdminServiceImpl implements AdminService{
         response.setBookId(book.getId());
         response.setTitle(book.getTitle());
         response.setCheckedOutBy((String) getLoggedInUser());
-
         return response;
     }
-
     private Object getLoggedInUser() {
         return "Welcome User";
     }

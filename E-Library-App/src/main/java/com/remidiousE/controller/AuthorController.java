@@ -36,8 +36,8 @@ public class AuthorController {
         AuthorRegistrationResponse response = authorService.registerNewAuthor(authorRegistrationRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-    @GetMapping("/get-author/{id}")
-    public Optional<Author> findAuthorById(@PathVariable("id") Long authorId) throws AuthorNotFoundException {
+    @GetMapping("/find-author/{authorId}")
+    public Optional<Author> findAuthorById(@PathVariable("authorId") Long authorId) throws AuthorNotFoundException {
         return authorService.findAuthorById(authorId);
     }
     @GetMapping("/get-author/{username}")

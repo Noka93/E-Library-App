@@ -30,11 +30,8 @@ public class AuthorServiceImpl implements AuthorService{
 
     @Override
     public AuthorRegistrationResponse registerNewAuthor(AuthorRegistrationRequest authorRequest) throws AuthorRegistrationException {
-
         Author newAuthor = AuthorMapper.map(authorRequest);
-
         Author savedAuthor = authorRepository.save(newAuthor);
-
         return AuthorMapper.map(savedAuthor);
 
     }
@@ -47,14 +44,10 @@ public class AuthorServiceImpl implements AuthorService{
             throw new AuthorNotFoundException("Author not found with ID: " + id);
         }
     }
-
     @Override
     public Optional<Author> findAuthorByUsername(String username) {
-        if (username == null) {
-            throw new IllegalArgumentException("Invalid username");
-        }else {
+        if (username == null) throw new IllegalArgumentException("Invalid username");
             return authorRepository.findAuthorByUsername(username);
-        }
     }
     @Override
     public List<Author> findAllAuthor() {
@@ -69,25 +62,22 @@ public class AuthorServiceImpl implements AuthorService{
         }
         Author foundAuthor = existingAuthor.get();
 
-        if (author.getFirstName() != null && !author.getFirstName().isEmpty()) {
+        if (author.getFirstName() != null && !author.getFirstName().isEmpty())
             foundAuthor.setFirstName(author.getFirstName());
-        }
-        if (author.getLastName() != null && !author.getLastName().isEmpty()) {
+
+        if (author.getLastName() != null && !author.getLastName().isEmpty())
             foundAuthor.setLastName(author.getLastName());
-        }
-        if (author.getEmail() != null && !author.getEmail().isEmpty()) {
+        if (author.getEmail() != null && !author.getEmail().isEmpty())
             foundAuthor.setEmail(author.getEmail());
-        }
-        if (author.getUsername() != null && !author.getUsername().isEmpty()) {
+
+        if (author.getUsername() != null && !author.getUsername().isEmpty())
             foundAuthor.setUsername(author.getUsername());
-        }
-        if (author.getPhoneNumber() != null && !author.getPhoneNumber().isEmpty()) {
+
+        if (author.getPhoneNumber() != null && !author.getPhoneNumber().isEmpty())
             foundAuthor.setPhoneNumber(author.getPhoneNumber());
-        }
 
         return authorRepository.save(foundAuthor);
     }
-
     @Override
     public void deleteAuthorById(Long id) {
         authorRepository.deleteById(id);
@@ -97,7 +87,6 @@ public class AuthorServiceImpl implements AuthorService{
         List<Book> searchResults = bookRepository.searchBookByTitle(title);
         return searchResults;
     }
-
     @Override
     public List<Book> findBooksByAuthorName(String firstname, String lastname) {
         return bookRepository.findBookByAuthor_FirstNameAndAuthor_LastName(firstname, lastname);
@@ -114,7 +103,6 @@ public class AuthorServiceImpl implements AuthorService{
         } else {
             authorLoginResponse.setMessage("Failed to log in");
         }
-
         return authorLoginResponse;
     }
     private boolean authenticate(String username, String password) {
@@ -125,11 +113,8 @@ public class AuthorServiceImpl implements AuthorService{
     public BookCheckoutResponse checkoutBook(Long bookId) throws BookNotFoundException, BookNotAvailableException {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException("Book not found with ID: " + bookId));
-
-        if (!book.isAvailable()) {
+        if (!book.isAvailable())
             throw new BookNotAvailableException("Book is not available for checkout");
-        }
-
         book.setAvailable(false);
         bookRepository.save(book);
 
@@ -137,7 +122,6 @@ public class AuthorServiceImpl implements AuthorService{
         response.setBookId(book.getId());
         response.setTitle(book.getTitle());
         response.setCheckedOutBy((String) getLoggedInUser());
-
         return response;
     }
     private Object getLoggedInUser() {
